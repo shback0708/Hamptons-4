@@ -10,9 +10,10 @@ playByPlay = open("NBA Hackathon - Play by Play Data Sample (50 Games).txt","r")
 #now we will use convertStringInto2DList to convert the given string into 2D list
 
 print(gameLineup);
+
 rawData = "hello my name is Daniel"
 
-def convertStringInto2DList(string):
+def convertDataInto2DList(string):
     #this function should convert the given data into 2D list
     final = rawData.split();
     return final;
@@ -34,3 +35,4 @@ print(convertDataInto2DList(rawData));
 #in Hamptons4 CSV
 
 def convertToCSV(string):
+    return 0;

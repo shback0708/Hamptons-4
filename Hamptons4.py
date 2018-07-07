@@ -9,14 +9,17 @@ playByPlay = open("NBA Hackathon - Play by Play Data Sample (50 Games).txt","r")
 #lets assume that gameLineup, eventCodes, and playByPlay are all strings
 #now we will use convertStringInto2DList to convert the given string into 2D list
 
-print(gameLineup);
-
 rawData = "hello my name is Daniel"
 
 def convertDataInto2DList(string):
     #this function should convert the given data into 2D list
-    final = rawData.split();
-    return final;
+    final = []
+    step1 = string.splitlines();
+    for i in range(1,len(step1)):
+        final.append(step1[i].split("\t"))
+    return final
+
+print(convertDataInto2DList(gameLineup));
 
 #then we will use calculateData to get the necessary data we need
 def calculateData(eventCodes, gameLineupData, playByPlay):
@@ -24,7 +27,6 @@ def calculateData(eventCodes, gameLineupData, playByPlay):
     #eventCodes, gameLineupData, playByPlay are all 2d lists that we can loop through 
     return 0;
 
-print(convertDataInto2DList(rawData));
 
 
 

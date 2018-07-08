@@ -1,4 +1,4 @@
-#holds the player class
+#Holds the player class
 
 class Player(object):
     def __init__(self, team, onCourt=True, rpm=0):

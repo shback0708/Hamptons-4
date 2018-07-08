@@ -1,26 +1,22 @@
 import csv
-from player.py import *
+import string
+from player import *
+from event import *
 
-gameLineup = open("NBA Hackathon - Game Lineup Data Sample (50 Games).txt","r").read()
-
-eventCodes = open("NBA Hackathon - Event Codes.txt","r").read()
-
-playByPlay = open("NBA Hackathon - Play by Play Data Sample (50 Games).txt","r").read()
-
-#lets assume that gameLineup, eventCodes, and playByPlay are all strings
-#now we will use convertStringInto2DList to convert the given string into 2D list
-
-rawData = "hello my name is Daniel"
-
-def convertDataInto2DList(string):
+def convertDataInto2DList(string, delimiter=","):
     #this function should convert the given data into 2D list
     final = []
-    step1 = string.splitlines();
+    step1 = string.splitlines()
     for i in range(1,len(step1)):
-        final.append(step1[i].split("\t"))
+        lst = step1[i].split(delimiter)
+        for j in range(len(lst)):
+            element = lst[j]
+            try:
+                lst[j] = element.replace('\"','').strip()
+            except:
+                pass
+        final.append(lst)
     return final
-
-print(convertDataInto2DList(gameLineup));
 
 #then we will use calculateData to get the necessary data we need
 def calculateData(eventCodes, gameLineupData, playByPlay):
@@ -39,3 +35,17 @@ def calculateData(eventCodes, gameLineupData, playByPlay):
 
 def convertToCSV(string):
     return 0;
+
+
+
+
+#The main function that will run at the end, everything above will be helper functions
+def runMain():
+    gameLineup = open("NBA Hackathon - Game Lineup Data Sample (50 Games).txt","r").read()
+    eventCodes = open("NBA Hackathon - Event Codes.txt","r").read()
+    playByPlay = open("pbp_sample_sorted.csv","r").read() #sorted using a Microsoft Excel table
+    gameLineup = convertDataInto2DList(gameLineup,"\t")
+    eventCodes = convertDataInto2DList(eventCodes,"\t")
+    playByPlay = convertDataInto2DList(playByPlay)
+
+runMain()

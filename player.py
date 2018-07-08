@@ -5,8 +5,10 @@ class Player(object):
         self.team = team
         self.onCourt = onCourt
         self.rpm = rpm
+
     def substitute(self):
         self.onCourt = not self.onCourt
+        
     def updateRPM(self, points, team):
         if self.onCourt == False:
             pass

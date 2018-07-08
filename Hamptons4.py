@@ -1,4 +1,5 @@
 import csv
+from player.py import *
 
 gameLineup = open("NBA Hackathon - Game Lineup Data Sample (50 Games).txt","r").read()
 

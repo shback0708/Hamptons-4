@@ -10,6 +10,12 @@ class Game(object):
     def __repr__(self):
         return self.ID
 
+    def __hash__(self):
+        return hash(self.ID)
+
+    def __eq__(self, other):
+        return (isinstance(other, Game) and (self.ID == other.ID))
+
     def updateTime(self, PCTime=7200, period=""):
         self.PCTime = PCTime
         if period != "": self.period = period

@@ -10,6 +10,7 @@ class Data(object):
     def __init__(self, lineupFile, eventCodeFile, pbpFile):
         self.dataInit(lineupFile, eventCodeFile, pbpFile)
         self.gamesInit()
+        self.eventsInit()
 
     #transforms given from .txt and .csv form to a more usable format
     def dataInit(self, lineupFile, eventCodeFile, pbpFile):
@@ -27,6 +28,16 @@ class Data(object):
         for game in self.games:
             team1, team2 = list(self.lineups[game].keys())[0], list(self.lineups[game].keys())[1]
             newSet.add(Game(game,team1,team2))
+        self.games = newSet
+
+    #initializes the events as objects
+    def eventsInit(self):
+        events = set()
+        for event in self.ec:
+            eventType, actionType, eventDesc, actionDesc = int(event[0]), int(event[1]), event[2], event[3]
+            events.add(Event(eventType, eventDesc, actionType, actionDesc))
+        self.events = events
+
 
 #this function should convert the given data into 2D list
 def convertDataInto2DList(string, delimiter=","):
@@ -62,27 +73,6 @@ def organizeLineups(lineupData):
 
     return lineups, games
 
-#then we will use calculateData to get the necessary data we need
-def calculateData(eventCodes, gameLineupData, playByPlay):
-    #do whatever calculations necessary 
-    #eventCodes, gameLineupData, playByPlay are all 2d lists that we can loop through 
-    return 0;
-
-
-
-
-
-
-
-#finally we will have the data and convert that into csv which will be 
-#in Hamptons4 CSV
-
-def convertToCSV(string):
-    return 0;
-
-
-
-
 #The main function that will run at the end, everything above will be helper functions
 def runMain():
     lineupFile = "NBA Hackathon - Game Lineup Data Sample (50 Games).txt"
@@ -91,6 +81,5 @@ def runMain():
     #this is why it's in a .csv form, not .txt
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
-
 
 runMain()

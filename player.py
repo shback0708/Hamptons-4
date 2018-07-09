@@ -18,9 +18,6 @@ class Player(object):
     def __eq__(self, other):
         return (isinstance(other, Player) and (self.PID == other.PID) and (self.game == other.game))
 
-    def substitute(self):
-        self.onCourt = not self.onCourt
-
     def updateRPM(self, points, team):
         if self.onCourt == False:
             pass

@@ -2,14 +2,12 @@
 from player import *
 
 class Game(object):
-    def __init__(self, gameID, team1, team2, period=1, PCTime=7200):
+    def __init__(self, gameID, team1, team2):
         self.ID = gameID
-        self.period, self.PCTime = period, PCTime
         self.team1, self.team2 = team1, team2
-        self.possession = None
         self.inFreeThrow = False #variable to check how substitutions affect RPM within free throws
         self.queuedSubs = set()
-        self.playersApppeared = set()
+        self.playersAppeared = dict() #maps playerID to player object
 
     #for debugging purposes
     def __repr__(self):
@@ -20,28 +18,38 @@ class Game(object):
 
     def __eq__(self, other):
         return (isinstance(other, Game) and (self.ID == other.ID))
- 
-    #updates time left in a quarter (in tenths of a second) with each passing event
-    def updateTime(self, PCTime=7200, period=""):
-        self.PCTime = PCTime
-        if period != "": self.period = period
 
-    #updates lineups at the beginning of a period
+    #creates a player and adds him to self.playersAppeared
+    def createPlayer(self, PID, team):
+        if PID in self.playersAppeared:
+            return
+        self.playersAppeared[PID] = Player(PID, self.ID, team)
+
+    #updates lineups at the start of periods
     def updateLineup(self, team1Lineup, team2Lineup):
-        self.inGame = [team1Lineup, team2Lineup]
+        lineup = team1Lineup.union(team2Lineup)
+        for player in team1Lineup:
+            self.createPlayer(player, self.team1)
+        for player in team2Lineup:
+            self.createPlayer(player, self.team2)
+        for player in self.playersAppeared:
+            self.playersAppeared[player].onCourt = False
+        for person in lineup:
+            self.playersAppeared[person].onCourt = True
 
     #handles substitutions
-    def substitution(self, playerOut, playerIn, team):
-        if team == self.team1:
-            index = 0
-        else:
-            index = 1
-        self.inGame[index].discard(playerOut)
-        playerOut.onCourt = False
-        self.inGame[index].add(playerIn)
-        playerIn.onCourt = True
+    def substitute(self, playerOut, playerIn, team):
+        if playerIn not in self.playersAppeared:
+            self.createPlayer(playerIn, team)
+        self.playersAppeared[playerOut].onCourt = False
+        self.playersAppeared[playerIn].onCourt = True
 
     #handles queued substitutions after free throws
     def doQueuedSubs(self):
-        for sub in self.queuedSubs:
-            self.substitution(sub[0], sub[1], sub[2])
+        for sub in self.queuedSubs: #sub: (playerIn, playerOut, team)
+            self.substitute(sub[0], sub[1], sub[2])
+
+    #handles updating RPM's when points are scored
+    def updateRPM(self, points, team):
+        for player in self.playersAppeared:
+            self.playersAppeared[player].updateRPM(points, team)

@@ -1,17 +1,25 @@
 import csv
 import string
 #below we import classes that help with the main function
-from player import *
-from game import *
+from player_2 import *
+from game_2 import *
 
 #a simple class used to help keep track of data that we use between functions
+#Attributes: 
+#self.lineups: contains nested dictionaries/sets as follows: games -> teams -> periods -> players
+#self.games: dictionary with self.games[gameID] = Game (object)
+#self.ec: contains events in 2D list form
+#self.events: contains the events in dictionary form: self.events[(eventType,actionType)] = 
+#           eventDesc + ": " + actionDesc
+#self.pbp: is a list of all each play from the play-by-play document; each line is in the form a dictionary 
+#           mapping each heading to its value
+#self.gamesPBP: is a dictionary mapping each gameID to its plays from self.pbp
 class Data(object):
     def __init__(self, lineupFile, eventCodeFile, pbpFile):
         self.dataInit(lineupFile, eventCodeFile, pbpFile)
         self.gamesInit()
         self.eventsInit()
         self.pbpInit()
-        self.rpmData = set()
 
     #transforms given from .txt and .csv form to a more usable format
     def dataInit(self, lineupFile, eventCodeFile, pbpFile):
@@ -25,17 +33,17 @@ class Data(object):
 
     #initializes games as objects
     def gamesInit(self):
-        newSet = set()
+        newDict = dict()
         for game in self.games:
             team1, team2 = list(self.lineups[game].keys())[0], list(self.lineups[game].keys())[1]
-            newSet.add(Game(game,team1,team2))
-        self.games = newSet
+            newDict[game] = Game(game,team1,team2)
+        self.games = newDict
 
     #initializes the events as a dictionary
     def eventsInit(self):
         events = dict()
         for event in self.ec:
-            key = (int(event[0]), int(event[1]))
+            key = (event[0], event[1])
             val = event[2] + ": " + event[3]
             events[key] = val
         self.events = events
@@ -58,50 +66,40 @@ class Data(object):
                 self.gamesPBP[playList["GameID"]] = []
             self.gamesPBP[playList["GameID"]].append(playList)
 
-    #runs the play-by-play
+    #for debugging purposes
+    def printEvent(self, play):
+        gameID, eventType, period, PCTime = play["GameID"], play["eventType"], play["period"], play["PCTime"]
+        actionType, op1, teamID, p1, p2 = play["actionType"], play["op1"], play["teamID"], play["person1"], play["person2"]
+        try:
+            event = self.events[(eventType, actionType)]
+        except:
+            pass
+        minutes = str(int((int(PCTime)/10)//60))
+        seconds = str((int(PCTime)/10)%60)
+        if seconds.index(".") == 1: seconds = "0" + seconds
+        if seconds[-1] == "0": seconds = seconds[:-2]
+        print("Period", period, ":", minutes + ":" + seconds, teamID + " --", p1, event)
+
+    #runs through each game's play-by-play
     def runPBP(self):
-        for game in self.gamesPBP:
-            currentGame = findGame(game, self.games)
-            for play in self.gamesPBP[game]:
-                gameID, eventType, period, PCTime = play["GameID"], int(play["eventType"]), int(play["period"]), play["PCTime"]
-                actionType, op1, teamID, p1, p2 = int(play["actionType"]), play["op1"], play["teamID"], play["person1"], play["person2"]
-                self.printEvent(period, PCTime, teamID, p1, eventType, actionType)
-                # elif eventType == 13: #end of period
-                #     pass
-                if eventType == 12: #start of period
+        for game in self.gamesPBP: #game is a gameID in string form
+            currentGame = self.games[game] #currentGame is an object Game
+            for play in self.gamesPBP[game]: #runs through each play in currentGame
+                gameID, eventType, period, PCTime = play["GameID"], play["eventType"], play["period"], play["PCTime"]
+                actionType, op1, teamID, p1, p2 = play["actionType"], play["op1"], play["teamID"], play["person1"], play["person2"]
+                # self.printEvent(play)
+                eventType = int(eventType)
+                #events that do not affect which players are in the game or scoring do not matter, for RPM purposes
+                passEvents = [13,11,10,9,7,6,5,4,2]
+                if eventType in passEvents:
+                    pass
+                elif eventType == 12: #start of period
                     currentGame.updateLineup(self.lineups[gameID][currentGame.team1][period], self.lineups[gameID][currentGame.team2][period])
-                    for player in currentGame.inGame[0]:
-                        newPlayer = initializePlayer(p1, gameID, teamID, currentGame)
-                    for player in currentGame.inGame[1]:
-                        newPlayer = initializePlayer(p1, gameID, teamID, currentGame)
-                elif eventType == 11: #ejection, ignored bc it's handled in substitution
-                    pass
-                elif eventType == 10: #jump ball
-                    if teamID == currentGame.team1:
-                        team = 1
-                    else:
-                        team = 2
-                    currentGame = team
-                elif eventType == 9: #time outs
-                    pass
                 elif eventType == 8: #substitutions
-                    player1, player2 = findPlayer(p1, currentGame.playersAppeared), findPlayer(p2, currentGame.playersAppeared)
                     if currentGame.inFreeThrow:
-                        currentGame.queuedSubs.add((player1, player2, teamID))
+                        currentGame.queuedSubs.add((p1, p2, teamID))
                     else:
-                        currentGame.substitute(player1, player2, teamID)
-                elif eventType == 7: #violations, ignored bc handled in turnovers
-                    pass
-                elif eventType == 6: #fouls, ignored bc handled in free throws, turnovers
-                    pass
-                elif eventType == 5: #turnovers
-                    currentGame.possession = 3 - currentGame.possession
-                elif eventType == 4: #rebounds
-                    if teamID == currentGame.team1:
-                        team = 1
-                    else:
-                        team = 2
-                    currentGame.possession = team
+                        currentGame.substitute(p1, p2, teamID)
                 elif eventType == 3: #free throws
                     starts = [11,13,18,21,25,27] #the "1 of" anything free throws
                     ends = [12,15,19,22,26,29] # the "x of x" free throws
@@ -110,21 +108,9 @@ class Data(object):
                     elif actionType in ends: 
                         currentGame.inFreeThrow = False
                         currentGame.doQueuedSubs()
-                    for player in currentGame.playersAppeared:
-                        player.updateRPM(op1, teamID)
-                elif eventType == 2: #missed shots
-                    pass
+                    currentGame.updateRPM(int(op1), teamID)
                 elif eventType == 1: #made shots
-                    for player in currentGame.playersAppeared:
-                        player.updateRPM(op1, teamID)
-
-    #for debugging purposes
-    def printEvent(self, period, PCTime, team, p1, eventType, actionType):
-        try:
-            event = self.events[(eventType, actionType)]
-            print("Period", period, ": ", PCTime, team + "--", p1, event)
-        except:
-            print(eventType, actionType)
+                    currentGame.updateRPM(int(op1), teamID)
 
     #function to help with the csv writing
     def returnFinal(self):
@@ -134,27 +120,7 @@ class Data(object):
                 final += [[str(game),str(players),str(players.rpm)]]
         return final
 
-#initializes a player object
-def initializePlayer(PID, gameID, team, game):
-    print(game)
-    for person in game.playersAppeared:
-        if person.PID == PID:
-            return
-    newPlayer = Player(PID,gameID,team)
-    game.playersAppeared.add(newPlayer)
-    return newPlayer
-
-#takes in the string of player ID and returns the object player
-def findPlayer(PID, playerSet):
-    for player in playerSet:
-        if player.PID == PID:
-            return player
-
-#takes in the string of game ID and returns the object game
-def findGame(gameID, gameSet):
-    for game in gameSet:
-        if game.ID == gameID:
-            return game
+#######################Data above, helpers below#####################################3
 
 #this function should convert the given data into 2D list
 def convertDataInto2DList(string, delimiter=","):
@@ -179,13 +145,13 @@ def organizeLineups(lineupData):
     lineups = dict()
     games = set()
     for lineup in lineupData:
-        game, period, person, team = lineup[0], int(lineup[1]), lineup[2], lineup[3]
+        game, period, person, team = lineup[0], lineup[1], lineup[2], lineup[3]
         games.add(game)
         if game not in lineups:
             lineups[game] = dict()
         if team not in lineups[game]:
-            lineups[game][team] = {1:set(), 2:set(), 3:set(), 4:set()}
-        if period == 5: lineups[game][team][5] = set()
+            lineups[game][team] = {'1':set(), '2':set(), '3':set(), '4':set()}
+        if period == '5': lineups[game][team]['5'] = set()
         lineups[game][team][period].add(person)
 
     return lineups, games
@@ -203,5 +169,8 @@ def runMain():
     #     a = csv.writer(fp, delimiter = ',')
     #     stuff = data.returnFinal()
     #     a.writerows(stuff)
-
+    for game in data.games:
+        for player in data.games[game].playersAppeared:
+            print(game, player, data.games[game].playersAppeared[player].rpm)
+    
 runMain()

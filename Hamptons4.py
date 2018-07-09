@@ -11,6 +11,7 @@ class Data(object):
         self.dataInit(lineupFile, eventCodeFile, pbpFile)
         self.gamesInit()
         self.eventsInit()
+        self.pbpInit()
 
     #transforms given from .txt and .csv form to a more usable format
     def dataInit(self, lineupFile, eventCodeFile, pbpFile):
@@ -37,6 +38,19 @@ class Data(object):
             eventType, actionType, eventDesc, actionDesc = int(event[0]), int(event[1]), event[2], event[3]
             events.add(Event(eventType, eventDesc, actionType, actionDesc))
         self.events = events
+
+    #organizes play-by-play data to make it easier to work with
+    def pbpInit(self):
+        #the different types of data within the play-by-play
+        headings = ["GameID", "eventNum", "eventType", "period", "WCTime", "PCTime", "actionType", "op1", 
+            "op2", "op3", "teamID", "person1", "person2", "teamIDType"]
+        newList = []
+        for play in self.pbp:
+            d = dict()
+            for i in range(len(headings)):
+                d[headings[i]] = play[i]
+            newList.append(d)
+        self.pbp = newList
 
 
 #this function should convert the given data into 2D list
@@ -81,5 +95,6 @@ def runMain():
     #this is why it's in a .csv form, not .txt
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
+
 
 runMain()

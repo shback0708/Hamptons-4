@@ -15,4 +15,3 @@ class Event(object):
     def __eq__(self, other):
         return (isinstance(other, Event) and (self.actionType == other.actionType) 
             and (self.eventType == other.actionType))
-

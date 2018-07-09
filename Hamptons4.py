@@ -1,8 +1,8 @@
 import csv
 import string
 #below we import classes that help with the main function
-from player_2 import *
-from game_2 import *
+from player import *
+from game import *
 
 #a simple class used to help keep track of data that we use between functions
 #Attributes: 
@@ -165,12 +165,13 @@ def runMain():
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
     data.runPBP()
-    # with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
-    #     a = csv.writer(fp, delimiter = ',')
-    #     stuff = data.returnFinal()
-    #     a.writerows(stuff)
-    for game in data.games:
-        for player in data.games[game].playersAppeared:
-            print(game, player, data.games[game].playersAppeared[player].rpm)
+    with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
+        a = csv.writer(fp, delimiter = ',')
+        stuff = data.returnFinal()
+        a.writerows(stuff)
+
+    # for game in data.games:
+    #     for player in data.games[game].playersAppeared:
+    #         print(game, player, data.games[game].playersAppeared[player].rpm)
     
 runMain()

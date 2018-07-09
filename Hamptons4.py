@@ -184,10 +184,13 @@ def organizeLineups(lineupData):
 
     return lineups, games
 
-#this function accumulate will run through all the play by play, and add plus
-#minus values to our players 
-def accumulate(data):
-    return 0
+#function to help with the csv writing
+def returnFinal(self):
+    final = [["Game_ID", "Player_ID", "Player_Plus/Minus"]]
+    for game in self.games:
+        for players in self.games[game].playersAppeared:
+            final += [[str(game),str(players),str(players.rpm)]]
+    return final
 
 #The main function that will run at the end, everything above will be helper functions
 def runMain():
@@ -198,9 +201,9 @@ def runMain():
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
     data.runPBP()
-    finalString = accumulate(data)
-    return finalString
-    #we will be returning game ID, player ID, and player plus minus(which we will have to go through 5
-    #quarters and manually add all for each player)
+    with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
+        a = csv.writer(fp, delimiter = ',')
+        data = returnFinal(Data)
+        a.writerows(data)
 
 runMain()

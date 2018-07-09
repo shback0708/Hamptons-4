@@ -116,11 +116,12 @@ class Data(object):
     def returnFinal(self):
         final = [["Game_ID", "Player_ID", "Player_Plus/Minus"]]
         for game in self.games:
-            for players in self.games[game].playersAppeared:
-                final += [[str(game),str(players),str(players.rpm)]]
+            for player in self.games[game].playersAppeared:
+                person = self.games[game].playersAppeared[player]
+                final += [[str(game),str(person),str(person.rpm)]]
         return final
 
-#######################Data above, helpers below#####################################3
+##################################Data above, helpers below#####################################
 
 #this function should convert the given data into 2D list
 def convertDataInto2DList(string, delimiter=","):

@@ -70,12 +70,11 @@ def convertDataInto2DList(string, delimiter=","):
         final.append(lst)
     return final
 
-<<<<<<< HEAD
+
 
 #turns the 2D list into dictionaries and sets
-=======
+
 #turns the lineupData 2D list into dictionaries and sets
->>>>>>> ab2201b9b71a5b087f16079881397871dff51c2d
 #the levels are: games -> teams -> periods -> players
 #also returns a set of the games
 def organizeLineups(lineupData):
@@ -114,10 +113,6 @@ def runMain():
 
 runMain()
 
-<<<<<<< HEAD
 #after we run runMain, then we will have to convert the strings into csv file
 #which will literally take 3 to 5 lines 
-=======
 
-runMain()
->>>>>>> ab2201b9b71a5b087f16079881397871dff51c2d

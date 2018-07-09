@@ -55,7 +55,7 @@ def convertDataInto2DList(string, delimiter=","):
         final.append(lst)
     return final
 
-#turns the 2D list into dictionaries and sets
+#turns the lineupData 2D list into dictionaries and sets
 #the levels are: games -> teams -> periods -> players
 #also returns a set of the games
 def organizeLineups(lineupData):

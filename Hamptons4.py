@@ -2,7 +2,6 @@ import csv
 import string
 #below we import classes that help with the main function
 from player import *
-from event import * #may delete, seems unnecessary rn
 from game import *
 
 

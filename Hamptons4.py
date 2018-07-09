@@ -5,6 +5,7 @@ from player import *
 from event import * #may delete, seems unnecessary rn
 from game import *
 
+
 #a simple class used to help keep track of data that we use between functions
 class Data(object):
     def __init__(self, lineupFile, eventCodeFile, pbpFile):
@@ -151,6 +152,10 @@ def convertDataInto2DList(string, delimiter=","):
         final.append(lst)
     return final
 
+
+
+#turns the 2D list into dictionaries and sets
+
 #turns the lineupData 2D list into dictionaries and sets
 #the levels are: games -> teams -> periods -> players
 #also returns a set of the games
@@ -169,6 +174,12 @@ def organizeLineups(lineupData):
 
     return lineups, games
 
+
+#this function accumulate will run through all the play by play, and add plus
+#minus values to our players 
+def accumulate(data):
+    return 0
+
 #The main function that will run at the end, everything above will be helper functions
 def runMain():
     lineupFile = "NBA Hackathon - Game Lineup Data Sample (50 Games).txt"
@@ -177,7 +188,9 @@ def runMain():
     #this is why it's in a .csv form, not .txt
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
-
-    data.runPBP()
+    finalString = accumulate(data)
+    return finalString
+    #we will be returning game ID, player ID, and player plus minus(which we will have to go through 5
+    #quarters and manually add all for each player)
 
 runMain()

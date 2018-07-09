@@ -10,7 +10,7 @@ class Player(object):
 
     #for debugging purposes
     def __repr__(self):
-        return self.PID + " in game " + self.game
+        return self.PID
 
     def __hash__(self):
         return hash((self.PID, self.game))

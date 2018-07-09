@@ -10,7 +10,6 @@ class Game(object):
         self.inFreeThrow = False #variable to check how substitutions affect RPM within free throws
         self.queuedSubs = set()
         self.playersApppeared = set()
-        self.playerNotInGame = set()
 
     #for debugging purposes
     def __repr__(self):
@@ -32,7 +31,7 @@ class Game(object):
         self.inGame = [team1Lineup, team2Lineup]
 
     #handles substitutions
-    def substitution(self, playerIn, playerOut, team):
+    def substitution(self, playerOut, playerIn, team):
         if team == self.team1:
             index = 0
         else:

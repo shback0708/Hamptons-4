@@ -63,61 +63,61 @@ class Data(object):
     #runs the play-by-play
     def runPBP(self):
         for game in self.gamesPBP:
-            for play in self.games[game]:
+            currentGame = findGame(game, self.games)
+            for play in self.gamesPBP[game]:
                 gameID, eventType, period, PCTime = play["GameID"], int(play["eventType"]), int(play["period"]), play["PCTime"]
                 actionType, op1, teamID, p1, p2 = int(play["actionType"]), play["op1"], play["teamID"], play["person1"], play["person2"]
-                elif eventType == 13: #end of period
-                    pass
+                self.printEvent(period, PCTime, teamID, p1, eventType, actionType)
+                # elif eventType == 13: #end of period
+                #     pass
                 if eventType == 12: #start of period
-                    self.games[gameID].updateLineup(self.lineups[gameID][self.games[gameID].team1][period],
-                        self.lineups[gameID][self.games[gameID].team2][period])
-                    for player in self.games[gameID].inGame[0]:
-                        self.initializePlayer(p1, gameID, teamID)
+                    currentGame.updateLineup(self.lineups[gameID][currentGame.team1][period], self.lineups[gameID][currentGame.team2][period])
+                    for player in currentGame.inGame[0]:
+                        newPlayer = initializePlayer(p1, gameID, teamID, currentGame)
+                    for player in currentGame.inGame[1]:
+                        newPlayer = initializePlayer(p1, gameID, teamID, currentGame)
                 elif eventType == 11: #ejection, ignored bc it's handled in substitution
                     pass
                 elif eventType == 10: #jump nall
-                    if teamID == self.games[gameID].team1:
+                    if teamID == currentGame.team1:
                         team = 1
                     else:
                         team = 2
-                    self.games[gameID].possession = team
+                    currentGame = team
                 elif eventType == 9: #time outs
                     pass
                 elif eventType == 8: #substitutions
-                    if self.games[game].inFreeThrow:
-                        self.queuedSubs.add((p1,p2,teamID))
+                    player1, player2 = findPlayer(p1, currentGame.playersAppeared), findPlayer(p2, currentGame.playersAppeared)
+                    if currentGame.inFreeThrow:
+                        currentGame.queuedSubs.add((player1, player2, teamID))
                     else:
-                        self.games[game].substitute(p1, p2, teamID)
+                        currentGame.substitute(player1, player2, teamID)
                 elif eventType == 7: #violations, ignored bc handled in turnovers
                     pass
                 elif eventType == 6: #fouls, ignored bc handled in free throws, turnovers
                     pass
                 elif eventType == 5: #turnovers
-                    self.games[gameID].possession = 3 - self.games[gameID].possession
+                    currentGame.possession = 3 - currentGame.possession
                 elif eventType == 4: #rebounds
-                    if teamID == self.games[gameID].team1:
+                    if teamID == currentGame.team1:
                         team = 1
                     else:
                         team = 2
-                    self.games[gameID].possession = team
+                    currentGame.possession = team
                 elif eventType == 3: #free throws
                     starts = [11,13,18,21,25,27] #the "1 of" anything free throws
                     ends = [12,15,19,22,26,29] # the "x of x" free throws
                     if actionType in starts:
-                        self.games[gameID].inFreeThrow = True
+                        currentGame.inFreeThrow = True
                     elif actionType in ends: 
-                        self.games[gameID].inFreeThrow = False
-                        self.games[gameID].doQueuedSubs()
-                    for player in self.games[gameID].inGame[0]:
-                        player.updateRPM(op1, teamID)
-                    for player in self.games[gameID].inGame[1]:
+                        currentGame.inFreeThrow = False
+                        currentGame.doQueuedSubs()
+                    for player in currentGame.playersAppeared:
                         player.updateRPM(op1, teamID)
                 elif eventType == 2: #missed shots
                     pass
                 elif eventType == 1: #made shots
-                    for player in self.games[gameID].inGame[0]:
-                        player.updateRPM(op1, teamID)
-                    for player in self.games[gameID].inGame[1]:
+                    for player in currentGame.playersAppeared:
                         player.updateRPM(op1, teamID)
 
     #for debugging purposes
@@ -128,13 +128,27 @@ class Data(object):
         except:
             print(eventType, actionType)
 
-    #initializes a player object
-    def initializePlayer(self, PID, GameID, team):
-        for person in self.games[gameID].playersAppeared:
-            if person.PID == PID:
-                return
-        newPlayer = Player(PID,GameID,team)
-        self.games[gameID].playersAppeared.add(newPlayer)
+#initializes a player object
+def initializePlayer(PID, gameID, team, game):
+    print(game)
+    for person in game.playersAppeared:
+        if person.PID == PID:
+            return
+    newPlayer = Player(PID,gameID,team)
+    game.playersAppeared.add(newPlayer)
+    return newPlayer
+
+#takes in the string of player ID and returns the object player
+def findPlayer(PID, playerSet):
+    for player in playerSet:
+        if player.PID == PID:
+            return player
+
+#takes in the string of game ID and returns the object game
+def findGame(gameID, gameSet):
+    for game in gameSet:
+        if game.ID == gameID:
+            return game
 
 #this function should convert the given data into 2D list
 def convertDataInto2DList(string, delimiter=","):
@@ -151,10 +165,6 @@ def convertDataInto2DList(string, delimiter=","):
                 pass
         final.append(lst)
     return final
-
-
-
-#turns the 2D list into dictionaries and sets
 
 #turns the lineupData 2D list into dictionaries and sets
 #the levels are: games -> teams -> periods -> players
@@ -174,7 +184,6 @@ def organizeLineups(lineupData):
 
     return lineups, games
 
-
 #this function accumulate will run through all the play by play, and add plus
 #minus values to our players 
 def accumulate(data):
@@ -188,6 +197,7 @@ def runMain():
     #this is why it's in a .csv form, not .txt
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
+    data.runPBP()
     finalString = accumulate(data)
     return finalString
     #we will be returning game ID, player ID, and player plus minus(which we will have to go through 5

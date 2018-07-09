@@ -124,9 +124,9 @@ class Data(object):
                 if person.rpm>0:
                     person.rpm = "+" + str(person.rpm)
                 final += [[str(game), str(person), person.rpm]]
-        # with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
-        #     a = csv.writer(fp, delimiter = ',')
-        #     a.writerows(final)
+        with open("Hamptons_4_Q1_BBALL.csv", "w", newline = "") as fp:
+            a = csv.writer(fp, delimiter = ',')
+            a.writerows(final)
 
 ##################################Data above, helpers below#####################################
 

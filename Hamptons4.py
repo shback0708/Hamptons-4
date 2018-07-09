@@ -12,6 +12,7 @@ class Data(object):
         self.dataInit(lineupFile, eventCodeFile, pbpFile)
         self.gamesInit()
         self.eventsInit()
+        self.pbpInit()
 
     #transforms given from .txt and .csv form to a more usable format
     def dataInit(self, lineupFile, eventCodeFile, pbpFile):
@@ -39,6 +40,19 @@ class Data(object):
             events.add(Event(eventType, eventDesc, actionType, actionDesc))
         self.events = events
 
+    #organizes play-by-play data to make it easier to work with
+    def pbpInit(self):
+        #the different types of data within the play-by-play
+        headings = ["GameID", "eventNum", "eventType", "period", "WCTime", "PCTime", "actionType", "op1", 
+            "op2", "op3", "teamID", "person1", "person2", "teamIDType"]
+        newList = []
+        for play in self.pbp:
+            d = dict()
+            for i in range(len(headings)):
+                d[headings[i]] = play[i]
+            newList.append(d)
+        self.pbp = newList
+
 
 #this function should convert the given data into 2D list
 def convertDataInto2DList(string, delimiter=","):
@@ -56,8 +70,12 @@ def convertDataInto2DList(string, delimiter=","):
         final.append(lst)
     return final
 
+<<<<<<< HEAD
 
 #turns the 2D list into dictionaries and sets
+=======
+#turns the lineupData 2D list into dictionaries and sets
+>>>>>>> ab2201b9b71a5b087f16079881397871dff51c2d
 #the levels are: games -> teams -> periods -> players
 #also returns a set of the games
 def organizeLineups(lineupData):
@@ -96,5 +114,10 @@ def runMain():
 
 runMain()
 
+<<<<<<< HEAD
 #after we run runMain, then we will have to convert the strings into csv file
 #which will literally take 3 to 5 lines 
+=======
+
+runMain()
+>>>>>>> ab2201b9b71a5b087f16079881397871dff51c2d

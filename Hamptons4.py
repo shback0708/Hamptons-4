@@ -112,14 +112,16 @@ class Data(object):
                 elif eventType == 1: #made shots
                     currentGame.updateRPM(int(op1), teamID)
 
-    #function to help with the csv writing
+    #function to do the csv writing
     def returnFinal(self):
         final = [["Game_ID", "Player_ID", "Player_Plus/Minus"]]
         for game in self.games:
             for player in self.games[game].playersAppeared:
                 person = self.games[game].playersAppeared[player]
-                final += [[str(game),str(person),str(person.rpm)]]
-        return final
+                final += [[str(game), str(person), str(person.rpm)]]
+        with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
+            a = csv.writer(fp, delimiter = ',')
+            a.writerows(final)
 
 ##################################Data above, helpers below#####################################
 
@@ -166,10 +168,7 @@ def runMain():
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
     data.runPBP()
-    with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
-        a = csv.writer(fp, delimiter = ',')
-        stuff = data.returnFinal()
-        a.writerows(stuff)
+    data.returnFinal()
 
     # for game in data.games:
     #     for player in data.games[game].playersAppeared:

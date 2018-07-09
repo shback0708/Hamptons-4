@@ -1,8 +1,8 @@
 #Holds the player class
 
 class Player(object):
-    def __init__(self, PersonID, gameID, team, onCourt=True, rpm=0):
-        self.PID
+    def __init__(self, personID, gameID, team, onCourt=True, rpm=0):
+        self.PID = personID
         self.game = gameID
         self.team = team
         self.onCourt = onCourt

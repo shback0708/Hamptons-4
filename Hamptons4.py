@@ -4,7 +4,6 @@ import string
 from player import *
 from game import *
 
-
 #a simple class used to help keep track of data that we use between functions
 class Data(object):
     def __init__(self, lineupFile, eventCodeFile, pbpFile):
@@ -77,7 +76,7 @@ class Data(object):
                         newPlayer = initializePlayer(p1, gameID, teamID, currentGame)
                 elif eventType == 11: #ejection, ignored bc it's handled in substitution
                     pass
-                elif eventType == 10: #jump nall
+                elif eventType == 10: #jump ball
                     if teamID == currentGame.team1:
                         team = 1
                     else:
@@ -126,6 +125,14 @@ class Data(object):
             print("Period", period, ": ", PCTime, team + "--", p1, event)
         except:
             print(eventType, actionType)
+
+    #function to help with the csv writing
+    def returnFinal(self):
+        final = [["Game_ID", "Player_ID", "Player_Plus/Minus"]]
+        for game in self.games:
+            for players in self.games[game].playersAppeared:
+                final += [[str(game),str(players),str(players.rpm)]]
+        return final
 
 #initializes a player object
 def initializePlayer(PID, gameID, team, game):
@@ -183,14 +190,6 @@ def organizeLineups(lineupData):
 
     return lineups, games
 
-#function to help with the csv writing
-def returnFinal(self):
-    final = [["Game_ID", "Player_ID", "Player_Plus/Minus"]]
-    for game in self.games:
-        for players in self.games[game].playersAppeared:
-            final += [[str(game),str(players),str(players.rpm)]]
-    return final
-
 #The main function that will run at the end, everything above will be helper functions
 def runMain():
     lineupFile = "NBA Hackathon - Game Lineup Data Sample (50 Games).txt"
@@ -200,9 +199,9 @@ def runMain():
     pbpFile = "pbp_sample_sorted.csv"
     data = Data(lineupFile, eventCodeFile, pbpFile)
     data.runPBP()
-    with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
-        a = csv.writer(fp, delimiter = ',')
-        data = returnFinal(Data)
-        a.writerows(data)
+    # with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
+    #     a = csv.writer(fp, delimiter = ',')
+    #     stuff = data.returnFinal()
+    #     a.writerows(stuff)
 
 runMain()

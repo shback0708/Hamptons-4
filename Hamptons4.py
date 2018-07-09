@@ -71,46 +71,49 @@ class Data(object):
         gameID, eventType, period, PCTime = play["GameID"], play["eventType"], play["period"], play["PCTime"]
         actionType, op1, teamID, p1, p2 = play["actionType"], play["op1"], play["teamID"], play["person1"], play["person2"]
         try:
-            event = self.events[(eventType, actionType)]
+            playType = self.events[(eventType, actionType)]
+            minutes = str(int((int(PCTime)/10)//60))
+            seconds = str((int(PCTime)/10)%60)
+            if seconds.index(".") == 1: seconds = "0" + seconds
+            if seconds[-1] == "0": seconds = seconds[:-2]
+            print("Period", period, ":", minutes + ":" + seconds, teamID + " --", p1, playType)
         except:
             pass
-        minutes = str(int((int(PCTime)/10)//60))
-        seconds = str((int(PCTime)/10)%60)
-        if seconds.index(".") == 1: seconds = "0" + seconds
-        if seconds[-1] == "0": seconds = seconds[:-2]
-        print("Period", period, ":", minutes + ":" + seconds, teamID + " --", p1, event)
+
+    #runs a play
+    def runPlay(self, play, currentGame):
+        gameID, eventType, period, actionType = play["GameID"], int(play["eventType"]), play["period"], int(play["actionType"])
+        op1, teamID, p1, p2 = play["op1"], play["teamID"], play["person1"], play["person2"]
+        #events that do not affect which players are in the game or scoring do not matter, for RPM purposes
+        passEvents = [13,11,10,9,7,6,5,4,2]
+        if eventType in passEvents:
+            pass
+        elif eventType == 12: #start of period
+            currentGame.updateLineup(self.lineups[gameID][currentGame.team1][period], self.lineups[gameID][currentGame.team2][period])
+        elif eventType == 8: #substitutions
+            if currentGame.inFreeThrow:
+                currentGame.queuedSubs.add((p1, p2, teamID))
+            else:
+                currentGame.substitute(p1, p2, teamID)
+        elif eventType == 3: #free throws
+            starts = [11,13,18,21,25,27] #the "1 of" anything free throws
+            ends = [12,15,19,22,26,29] # the "x of x" free throws
+            if actionType in starts:
+                currentGame.inFreeThrow = True
+            elif actionType in ends: 
+                currentGame.inFreeThrow = False
+                currentGame.doQueuedSubs()
+            currentGame.updateRPM(int(op1), teamID)
+        elif eventType == 1: #made shots
+            currentGame.updateRPM(int(op1), teamID)
 
     #runs through each game's play-by-play
     def runPBP(self):
         for game in self.gamesPBP: #game is a gameID in string form
             currentGame = self.games[game] #currentGame is an object Game
             for play in self.gamesPBP[game]: #runs through each play in currentGame
-                gameID, eventType, period, PCTime = play["GameID"], play["eventType"], play["period"], play["PCTime"]
-                actionType, op1, teamID, p1, p2 = play["actionType"], play["op1"], play["teamID"], play["person1"], play["person2"]
-                # self.printEvent(play)
-                eventType = int(eventType)
-                #events that do not affect which players are in the game or scoring do not matter, for RPM purposes
-                passEvents = [13,11,10,9,7,6,5,4,2]
-                if eventType in passEvents:
-                    pass
-                elif eventType == 12: #start of period
-                    currentGame.updateLineup(self.lineups[gameID][currentGame.team1][period], self.lineups[gameID][currentGame.team2][period])
-                elif eventType == 8: #substitutions
-                    if currentGame.inFreeThrow:
-                        currentGame.queuedSubs.add((p1, p2, teamID))
-                    else:
-                        currentGame.substitute(p1, p2, teamID)
-                elif eventType == 3: #free throws
-                    starts = [11,13,18,21,25,27] #the "1 of" anything free throws
-                    ends = [12,15,19,22,26,29] # the "x of x" free throws
-                    if actionType in starts:
-                        currentGame.inFreeThrow = True
-                    elif actionType in ends: 
-                        currentGame.inFreeThrow = False
-                        currentGame.doQueuedSubs()
-                    currentGame.updateRPM(int(op1), teamID)
-                elif eventType == 1: #made shots
-                    currentGame.updateRPM(int(op1), teamID)
+                self.printEvent(play)
+                self.runPlay(play, currentGame)
 
     #function to do the csv writing
     def returnFinal(self):
@@ -118,10 +121,12 @@ class Data(object):
         for game in self.games:
             for player in self.games[game].playersAppeared:
                 person = self.games[game].playersAppeared[player]
-                final += [[str(game), str(person), str(person.rpm)]]
-        with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
-            a = csv.writer(fp, delimiter = ',')
-            a.writerows(final)
+                if person.rpm>0:
+                    person.rpm = "+" + str(person.rpm)
+                final += [[str(game), str(person), person.rpm]]
+        # with open("Hamptons_4_Q1_BBALL.csv", "w", newLine = "") as fp:
+        #     a = csv.writer(fp, delimiter = ',')
+        #     a.writerows(final)
 
 ##################################Data above, helpers below#####################################
 
@@ -170,8 +175,8 @@ def runMain():
     data.runPBP()
     data.returnFinal()
 
-    # for game in data.games:
-    #     for player in data.games[game].playersAppeared:
-    #         print(game, player, data.games[game].playersAppeared[player].rpm)
-    
+    for game in data.games:
+        for player in data.games[game].playersAppeared:
+            print(game, player, data.games[game].playersAppeared[player].rpm)
+
 runMain()

@@ -1,5 +1,4 @@
 import csv
-import string
 #below we import classes that help with the main function
 from player import *
 from game import *
@@ -82,19 +81,19 @@ class Data(object):
 
     #runs a play
     def runPlay(self, play, currentGame):
-        gameID, eventType, period, actionType = play["GameID"], int(play["eventType"]), play["period"], int(play["actionType"])
-        op1, teamID, p1, p2 = play["op1"], play["teamID"], play["person1"], play["person2"]
+        gameID, eventType, period = play["GameID"], int(play["eventType"]), play["period"]
+        actionType, op1, p1, p2 = int(play["actionType"]), play["op1"], play["person1"], play["person2"]
         #events that do not affect which players are in the game or scoring do not matter, for RPM purposes
         passEvents = [13,11,10,9,7,6,5,4,2]
         if eventType in passEvents:
             pass
         elif eventType == 12: #start of period
-            currentGame.updateLineup(self.lineups[gameID][currentGame.team1][period], self.lineups[gameID][currentGame.team2][period])
+            currentGame.updateLineup(self.lineups[gameID], period)
         elif eventType == 8: #substitutions
             if currentGame.inFreeThrow:
-                currentGame.queuedSubs.add((p1, p2, teamID))
+                currentGame.queuedSubs.add((p1, p2))
             else:
-                currentGame.substitute(p1, p2, teamID)
+                currentGame.substitute(p1, p2)
         elif eventType == 3: #free throws
             starts = [11,13,18,21,25,27] #the "1 of" anything free throws
             ends = [12,15,19,22,26,29] # the "x of x" free throws
@@ -103,9 +102,9 @@ class Data(object):
             elif actionType in ends: 
                 currentGame.inFreeThrow = False
                 currentGame.doQueuedSubs()
-            currentGame.updateRPM(int(op1), teamID)
+            currentGame.updateRPM(int(op1), p1)
         elif eventType == 1: #made shots
-            currentGame.updateRPM(int(op1), teamID)
+            currentGame.updateRPM(int(op1), p1)
 
     #runs through each game's play-by-play
     def runPBP(self):
@@ -175,9 +174,5 @@ def runMain():
     data = Data(lineupFile, eventCodeFile, pbpFile)
     data.runPBP()
     data.returnFinal()
-
-    # for game in data.games:
-    #     for player in data.games[game].playersAppeared:
-    #         print(game, player, data.games[game].playersAppeared[player].rpm)
 
 runMain()

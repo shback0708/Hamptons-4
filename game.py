@@ -26,7 +26,9 @@ class Game(object):
         self.playersAppeared[PID] = Player(PID, self.ID, team)
 
     #updates lineups at the start of periods
-    def updateLineup(self, team1Lineup, team2Lineup):
+    def updateLineup(self, lineups, period):
+        team1Lineup = lineups[self.team1][period]
+        team2Lineup = lineups[self.team2][period]
         lineup = team1Lineup.union(team2Lineup)
         for player in self.playersAppeared:
             self.playersAppeared[player].onCourt = False
@@ -38,27 +40,53 @@ class Game(object):
             self.playersAppeared[person].onCourt = True
 
     #handles substitutions
-    def substitute(self, playerOut, playerIn, team):
-        if playerIn not in self.playersAppeared:
-            self.createPlayer(playerIn, team)
+    def substitute(self, playerOut, playerIn):
+        team = self.playersAppeared[playerOut].team
+        self.createPlayer(playerIn, team)
         self.playersAppeared[playerOut].onCourt = False
         self.playersAppeared[playerIn].onCourt = True
 
     #handles queued substitutions after free throws
     def doQueuedSubs(self):
-        for sub in self.queuedSubs: #sub: (playerIn, playerOut, team)
-            self.substitute(sub[0], sub[1], sub[2])
+        for sub in self.queuedSubs: #sub: (playerIn, playerOut)
+            self.substitute(sub[0], sub[1])
         self.queuedSubs = set()
 
     #handles updating RPM's when points are scored
-    def updateRPM(self, points, team):
+    def updateRPM(self, points, scorer):
+        team = self.playersAppeared[scorer].team
         for player in self.playersAppeared:
             self.playersAppeared[player].updateRPM(points, team)
 
-    #for debugging, counts number of player with onCourt = True
+    #for debugging, counts number of player with onCourt == True
     def countOnCourt(self):
         count = 0
+        t1count = 0
+        t2count = 0
         for player in self.playersAppeared:
             if self.playersAppeared[player].onCourt:
                 count += 1
-        return count
+                if self.playersAppeared[player].team == self.team1:
+                    t1count += 1
+                if self.playersAppeared[player].team == self.team2:
+                    t2count += 1
+        return count, t1count, t2count
+
+    #again for debugging, checks the sum of all the players' RPM's in the game
+    #should be 0 at all times, since any action should result in a net of 0 total RPM
+    def totalRPM(self):
+        total = 0
+        for player in self.playersAppeared:
+            total += self.playersAppeared[player].rpm
+        return total
+
+    #again for debugging, to see which teams players are on
+    def checkLineups(self):
+        lineups = {self.team1:set(),self.team2:set()}
+        for player in self.playersAppeared:
+            if self.playersAppeared[player].onCourt:
+                if self.playersAppeared[player].team == self.team1:
+                    lineups[self.team1].add(self.playersAppeared[player])
+                elif self.playersAppeared[player].team == self.team2:
+                    lineups[self.team2].add(self.playersAppeared[player])
+        return lineups

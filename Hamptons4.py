@@ -76,7 +76,7 @@ class Data(object):
             seconds = str((int(PCTime)/10)%60)
             if seconds.index(".") == 1: seconds = "0" + seconds
             if seconds[-1] == "0": seconds = seconds[:-2]
-            print("Period", period, ":", minutes + ":" + seconds, teamID + " --", p1, playType)
+            print("Game: " + gameID + " Period", period, ":", minutes + ":" + seconds, teamID + " --", p1, playType)
         except:
             pass
 
@@ -159,7 +159,8 @@ def organizeLineups(lineupData):
             lineups[game] = dict()
         if team not in lineups[game]:
             lineups[game][team] = {'1':set(), '2':set(), '3':set(), '4':set()}
-        if period == '5': lineups[game][team]['5'] = set()
+        if period == '5' and '5' not in lineups[game][team]: 
+            lineups[game][team]['5'] = set()
         lineups[game][team][period].add(person)
 
     return lineups, games
@@ -175,8 +176,8 @@ def runMain():
     data.runPBP()
     data.returnFinal()
 
-    for game in data.games:
-        for player in data.games[game].playersAppeared:
-            print(game, player, data.games[game].playersAppeared[player].rpm)
+    # for game in data.games:
+    #     for player in data.games[game].playersAppeared:
+    #         print(game, player, data.games[game].playersAppeared[player].rpm)
 
 runMain()

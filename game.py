@@ -28,12 +28,12 @@ class Game(object):
     #updates lineups at the start of periods
     def updateLineup(self, team1Lineup, team2Lineup):
         lineup = team1Lineup.union(team2Lineup)
+        for player in self.playersAppeared:
+            self.playersAppeared[player].onCourt = False
         for player in team1Lineup:
             self.createPlayer(player, self.team1)
         for player in team2Lineup:
             self.createPlayer(player, self.team2)
-        for player in self.playersAppeared:
-            self.playersAppeared[player].onCourt = False
         for person in lineup:
             self.playersAppeared[person].onCourt = True
 
@@ -48,8 +48,17 @@ class Game(object):
     def doQueuedSubs(self):
         for sub in self.queuedSubs: #sub: (playerIn, playerOut, team)
             self.substitute(sub[0], sub[1], sub[2])
+        self.queuedSubs = set()
 
     #handles updating RPM's when points are scored
     def updateRPM(self, points, team):
         for player in self.playersAppeared:
             self.playersAppeared[player].updateRPM(points, team)
+
+    #for debugging, counts number of player with onCourt = True
+    def countOnCourt(self):
+        count = 0
+        for player in self.playersAppeared:
+            if self.playersAppeared[player].onCourt:
+                count += 1
+        return count

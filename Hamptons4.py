@@ -81,9 +81,9 @@ class Data(object):
 
     #runs a play
     def runPlay(self, play, currentGame):
-        gameID, eventType, period = play["GameID"], int(play["eventType"]), play["period"]
-        actionType, op1, p1, p2 = int(play["actionType"]), play["op1"], play["person1"], play["person2"]
-        #events that do not affect which players are in the game or scoring do not matter, for RPM purposes
+        gameID, eventType, period, actionType = play["GameID"], int(play["eventType"]), play["period"], int(play["actionType"])
+        op1, op2, op3, p1, p2 = play["op1"], play["op2"], play["op3"], play["person1"], play["person2"]
+        #events that do not affect which players are on the court or scoring do not matter, for RPM purposes
         passEvents = [13,11,10,9,7,6,5,4,2]
         if eventType in passEvents:
             pass
@@ -94,12 +94,12 @@ class Data(object):
                 currentGame.queuedSubs.add((p1, p2))
             else:
                 currentGame.substitute(p1, p2)
-        elif eventType == 3: #free throws
-            starts = [11,13,18,21,25,27] #the "1 of" anything free throws
-            ends = [10,12,15,16,17,19,20,22,26,29] # the "x of x" free throws
-            if actionType in starts:
+        elif eventType == 6: #fouls
+            if op1 != "0" or op3 != "0":
                 currentGame.inFreeThrow = True
-            elif actionType in ends: 
+        elif eventType == 3: #free throws
+            ends = [10,12,15,16,17,19,20,22,26,29] # the "x of x" free throws
+            if actionType in ends:
                 currentGame.inFreeThrow = False
                 currentGame.doQueuedSubs()
             currentGame.updateRPM(int(op1), p1)

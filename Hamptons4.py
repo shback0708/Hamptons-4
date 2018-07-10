@@ -96,7 +96,7 @@ class Data(object):
                 currentGame.substitute(p1, p2)
         elif eventType == 3: #free throws
             starts = [11,13,18,21,25,27] #the "1 of" anything free throws
-            ends = [12,15,19,22,26,29] # the "x of x" free throws
+            ends = [10,12,15,16,17,19,20,22,26,29] # the "x of x" free throws
             if actionType in starts:
                 currentGame.inFreeThrow = True
             elif actionType in ends: 

@@ -5,7 +5,7 @@ class Game(object):
     def __init__(self, gameID, team1, team2):
         self.ID = gameID
         self.team1, self.team2 = team1, team2
-        self.inFreeThrow = False #variable to check how substitutions affect RPM within free throws
+        self.inFreeThrow = False #variable to check how substitutions affect plus/minus within free throws
         self.queuedSubs = set()
         self.playersAppeared = dict() #maps playerID to player object
 
@@ -58,12 +58,12 @@ class Game(object):
             self.substitute(sub[0], sub[1])
         self.queuedSubs = set()
 
-    #handles updating players' RPM's when points are scored
-    def updateRPM(self, points, scorer):
+    #handles updating players' plus/minus's when points are scored
+    def updatePM(self, points, scorer):
         team = self.playersAppeared[scorer].team
 
         for player in self.playersAppeared:
-            self.playersAppeared[player].updateRPM(points, team) #updated only for players that are on the court
+            self.playersAppeared[player].updatePM(points, team) #updated only for players that are on the court
 
     #for debugging, counts number of player with onCourt == True (total, team1, team2)
     def countOnCourt(self):
@@ -83,13 +83,13 @@ class Game(object):
 
         return count, t1count, t2count
 
-    #again for debugging, checks the sum of all the players' RPM's in the game
-    #should be 0 at all times, since any action should result in a net of 0 total RPM
-    def totalRPM(self):
+    #again for debugging, checks the sum of all the players' plus/minus's in the game
+    #should be 0 at all times, since any action should result in a net of 0 total plus/minus
+    def totalPM(self):
         total = 0
 
         for player in self.playersAppeared:
-            total += self.playersAppeared[player].rpm
+            total += self.playersAppeared[player].pm
 
         return total
 

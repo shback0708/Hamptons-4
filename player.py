@@ -1,12 +1,12 @@
 #Holds the player class, used to keep track of data for a player
 
 class Player(object):
-    def __init__(self, personID, gameID, team, onCourt=True, rpm=0):
+    def __init__(self, personID, gameID, team, onCourt=True, pm=0):
         self.PID = personID
         self.game = gameID
         self.team = team
         self.onCourt = onCourt
-        self.rpm = rpm
+        self.pm = pm
 
     #for debugging purposes
     def __repr__(self):
@@ -18,12 +18,12 @@ class Player(object):
     def __eq__(self, other):
         return (isinstance(other, Player) and (self.PID == other.PID) and (self.game == other.game))
 
-    #updates a player's RPM based on how many points were scored and which team scored
-    def updateRPM(self, points, team):
+    #updates a player's plus/minus based on how many points were scored and which team scored
+    def updatePM(self, points, team):
         if self.onCourt == False:
             pass
         else:
             add = 1
             if self.team != team:
                 add = -1
-            self.rpm += add*points
+            self.pm += add*points

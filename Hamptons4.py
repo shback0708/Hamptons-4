@@ -91,7 +91,7 @@ class Data(object):
         gameID, eventType, period, actionType = play["GameID"], int(play["eventType"]), play["period"], int(play["actionType"])
         op1, op3, p1, p2 = play["op1"], play["op3"], play["person1"], play["person2"]
 
-        #events that do not affect which players are on the court or scoring do not matter, for RPM purposes
+        #events that do not affect which players are on the court or scoring do not matter, for plus/minus purposes
         passEvents = [13,11,10,9,7,6,5,4,2]
         if eventType in passEvents:
             pass
@@ -114,10 +114,10 @@ class Data(object):
             if actionType in ends:
                 currentGame.inFreeThrow = False
                 currentGame.doQueuedSubs()
-            currentGame.updateRPM(int(op1), p1)
+            currentGame.updatePM(int(op1), p1)
 
         elif eventType == 1: #made shots
-            currentGame.updateRPM(int(op1), p1)
+            currentGame.updatePM(int(op1), p1)
 
     #runs through each game's play-by-play
     def runPBP(self):
@@ -138,9 +138,9 @@ class Data(object):
             for player in self.games[game].playersAppeared:
                 person = self.games[game].playersAppeared[player]
 
-                if person.rpm>0:
-                    person.rpm = "+" + str(person.rpm)
-                final += [[str(game), str(person), person.rpm]]
+                if person.pm>0:
+                    person.pm = "+" + str(person.pm)
+                final += [[str(game), str(person), person.pm]]
 
         with open("Hamptons_4_Q1_BBALL.csv", "w", newline = "") as fp:
             a = csv.writer(fp, delimiter = ',')

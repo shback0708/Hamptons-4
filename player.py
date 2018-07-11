@@ -1,4 +1,4 @@
-#Holds the player class
+#Holds the player class, used to keep track of data for a player
 
 class Player(object):
     def __init__(self, personID, gameID, team, onCourt=True, rpm=0):
@@ -18,6 +18,7 @@ class Player(object):
     def __eq__(self, other):
         return (isinstance(other, Player) and (self.PID == other.PID) and (self.game == other.game))
 
+    #updates a player's RPM based on how many points were scored and which team scored
     def updateRPM(self, points, team):
         if self.onCourt == False:
             pass

@@ -33,6 +33,7 @@ class Data(object):
     #initializes games as objects
     def gamesInit(self):
         newDict = dict()
+        
         for game in self.games:
             team1, team2 = list(self.lineups[game].keys())[0], list(self.lineups[game].keys())[1]
             newDict[game] = Game(game,team1,team2)
@@ -41,6 +42,7 @@ class Data(object):
     #initializes the events as a dictionary
     def eventsInit(self):
         events = dict()
+
         for event in self.ec:
             key = (event[0], event[1])
             val = event[2] + ": " + event[3]
@@ -53,13 +55,18 @@ class Data(object):
         headings = ["GameID", "eventNum", "eventType", "period", "WCTime", "PCTime", "actionType", "op1", 
             "op2", "op3", "teamID", "person1", "person2", "teamIDType"]
         newList = []
-        for play in self.pbp:
+
+        #turns plays into dictionaries to make its attributes easier to locate
+        for play in self.pbp: 
             d = dict()
+
             for i in range(len(headings)):
                 d[headings[i]] = play[i]
             newList.append(d)
         self.pbp = newList
         self.gamesPBP = dict()
+
+        #breaks the play-by-play data into games, indexed to by their gameID's
         for playList in self.pbp:
             if playList["GameID"] not in self.gamesPBP:
                 self.gamesPBP[playList["GameID"]] = []
@@ -79,50 +86,62 @@ class Data(object):
         except:
             pass
 
-    #runs a play
+    #runs a play based on its eventType
     def runPlay(self, play, currentGame):
         gameID, eventType, period, actionType = play["GameID"], int(play["eventType"]), play["period"], int(play["actionType"])
-        op1, op2, op3, p1, p2 = play["op1"], play["op2"], play["op3"], play["person1"], play["person2"]
+        op1, op3, p1, p2 = play["op1"], play["op3"], play["person1"], play["person2"]
+
         #events that do not affect which players are on the court or scoring do not matter, for RPM purposes
         passEvents = [13,11,10,9,7,6,5,4,2]
         if eventType in passEvents:
             pass
+
         elif eventType == 12: #start of period
             currentGame.updateLineup(self.lineups[gameID], period)
+
         elif eventType == 8: #substitutions
             if currentGame.inFreeThrow:
                 currentGame.queuedSubs.add((p1, p2))
             else:
                 currentGame.substitute(p1, p2)
+
         elif eventType == 6: #fouls
             if op1 != "0" or op3 != "0":
                 currentGame.inFreeThrow = True
+
         elif eventType == 3: #free throws
             ends = [10,12,15,16,17,19,20,22,26,29] # the "x of x" free throws
             if actionType in ends:
                 currentGame.inFreeThrow = False
                 currentGame.doQueuedSubs()
             currentGame.updateRPM(int(op1), p1)
+
         elif eventType == 1: #made shots
             currentGame.updateRPM(int(op1), p1)
 
     #runs through each game's play-by-play
     def runPBP(self):
+
         for game in self.gamesPBP: #game is a gameID in string form
             currentGame = self.games[game] #currentGame is an object Game
+
             for play in self.gamesPBP[game]: #runs through each play in currentGame
-                self.printEvent(play)
+                self.printEvent(play) #used to print each event as it runs for debugging purposes
                 self.runPlay(play, currentGame)
 
     #function to do the csv writing
     def returnFinal(self):
         final = [["Game_ID", "Player_ID", "Player_Plus/Minus"]]
+
         for game in self.games:
+
             for player in self.games[game].playersAppeared:
                 person = self.games[game].playersAppeared[player]
+
                 if person.rpm>0:
                     person.rpm = "+" + str(person.rpm)
                 final += [[str(game), str(person), person.rpm]]
+
         with open("Hamptons_4_Q1_BBALL.csv", "w", newline = "") as fp:
             a = csv.writer(fp, delimiter = ',')
             a.writerows(final)
@@ -133,9 +152,11 @@ class Data(object):
 def convertDataInto2DList(string, delimiter=","):
     final = []
     step1 = string.splitlines()
+
     for i in range(1,len(step1)):
         lst = step1[i].split(delimiter)
-        #for removing some annoying whitespaces
+
+        #below forloop used for removing some annoying whitespaces within quotations
         for j in range(len(lst)):
             element = lst[j]
             try:
@@ -143,6 +164,7 @@ def convertDataInto2DList(string, delimiter=","):
             except:
                 pass
         final.append(lst)
+
     return final
 
 #turns the lineupData 2D list into dictionaries and sets
@@ -151,14 +173,18 @@ def convertDataInto2DList(string, delimiter=","):
 def organizeLineups(lineupData):
     lineups = dict()
     games = set()
+
     for lineup in lineupData:
         game, period, person, team = lineup[0], lineup[1], lineup[2], lineup[3]
         games.add(game)
+
         if game not in lineups:
             lineups[game] = dict()
+
         if team not in lineups[game]:
             lineups[game][team] = {'1':set(), '2':set(), '3':set(), '4':set()}
-        if period == '5' and '5' not in lineups[game][team]: 
+
+        if period == '5' and '5' not in lineups[game][team]: #to account for OT scenarios
             lineups[game][team]['5'] = set()
         lineups[game][team][period].add(person)
 
